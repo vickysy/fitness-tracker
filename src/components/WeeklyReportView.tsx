@@ -12,6 +12,7 @@ interface WeeklyReportViewProps {
 
 export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [isExporting, setIsExporting] = useState(false);
     const report = reportGenerator.generateWeeklyReport(workouts, currentDate);
 
     const handlePreviousWeek = () => {
@@ -23,70 +24,75 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
     };
 
     const handleExport = async () => {
+        if (isExporting) return;
+
         const element = document.getElementById('weekly-report');
         if (!element) {
             alert('找不到报告元素');
             return;
         }
 
-        // 检查元素大小
-        const rect = element.getBoundingClientRect();
-        console.log('元素大小:', rect.width, 'x', rect.height);
-
-        if (rect.width === 0 || rect.height === 0) {
-            alert('报告元素大小为0，无法导出');
-            return;
-        }
+        setIsExporting(true);
 
         try {
-            // 等待一下确保渲染完成
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // 确保元素在视口内并渲染完成
+            element.scrollIntoView({ block: 'start' });
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             const canvas = await html2canvas(element, {
-                backgroundColor: '#18181b',
-                scale: 3, // 提高到3倍
+                backgroundColor: '#0f172a', // 使用更接近背景的颜色 (slate-900)
+                scale: 2, // 固定倍率，避免过大导致手机内存溢出
                 useCORS: true,
                 allowTaint: true,
-                foreignObjectRendering: false,
-                logging: false,
-                width: element.scrollWidth,  // 使用实际宽度
-                height: element.scrollHeight, // 使用实际高度
+                logging: true,
+                width: element.scrollWidth,
+                height: element.scrollHeight,
                 windowWidth: element.scrollWidth,
                 windowHeight: element.scrollHeight,
+                x: 0,
+                y: 0,
+                scrollX: 0,
+                scrollY: 0,
                 onclone: (clonedDoc) => {
-                    const svgs = clonedDoc.querySelectorAll('svg');
-                    svgs.forEach(svg => {
-                        svg.style.display = 'block';
-                    });
+                    const clonedElement = clonedDoc.getElementById('weekly-report');
+                    const exportHeader = clonedDoc.getElementById('export-header');
+                    
+                    if (exportHeader) {
+                        exportHeader.classList.remove('hidden');
+                    }
+
+                    if (clonedElement) {
+                        clonedElement.style.padding = '24px';
+                        clonedElement.style.height = 'auto';
+                        clonedElement.style.width = '600px'; // 导出时固定宽度，防止布局乱掉
+                        clonedElement.style.background = 'linear-gradient(to bottom right, #0f172a, #581c87, #0f172a)';
+
+                        // 移除所有 glass-card 的 backdrop-filter，因为它会导致 html2canvas 渲染失败
+                        const glassCards = clonedElement.getElementsByClassName('glass-card');
+                        for (let i = 0; i < glassCards.length; i++) {
+                            const card = glassCards[i] as HTMLElement;
+                            card.style.backdropFilter = 'none';
+                            card.style.setProperty('-webkit-backdrop-filter', 'none');
+                            card.style.background = 'rgba(24, 24, 27, 0.8)';
+                        }
+                    }
                 }
             });
 
-            if (canvas.width === 0 || canvas.height === 0) {
-                throw new Error('生成的canvas大小为0');
-            }
+            const dataUrl = canvas.toDataURL('image/png', 0.9);
+            const link = document.createElement('a');
+            link.download = `周报_${format(report.weekStart, 'yyyy-MM-dd')}.png`;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
 
-            // 使用Blob方式下载
-            canvas.toBlob((blob) => {
-                if (!blob) {
-                    alert('生成图片失败');
-                    return;
-                }
-
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.download = `周报_${format(report.weekStart, 'yyyy-MM-dd')}.png`;
-                link.href = url;
-                link.click();
-
-                // 清理URL对象
-                setTimeout(() => URL.revokeObjectURL(url), 100);
-
-                console.log('导出成功!', blob.size, 'bytes');
-            }, 'image/png', 1.0); // 最高质量
-
+            console.log('导出成功!');
         } catch (error) {
             console.error('导出失败:', error);
             alert('导出失败: ' + (error as Error).message);
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -118,9 +124,9 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
             </div>
 
             {/* 报告内容 */}
-            <div id="weekly-report" className="space-y-6 p-6 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-                {/* 导出时的标题和日期 */}
-                <div className="text-center space-y-2 mb-8 border-b border-white/10 pb-6">
+            <div id="weekly-report" className="space-y-6">
+                {/* 导出时的标题和日期 - 只有在克隆导出时才显示 */}
+                <div id="export-header" className="hidden text-center space-y-2 mb-8 border-b border-white/10 pb-6">
                     <h2 className="text-3xl font-black tracking-widest text-orange-400">
                         健身记录
                     </h2>
@@ -135,7 +141,7 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
                 </div>
 
                 {/* 概览统计 */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <StatCard
                         label="训练次数"
                         value={report.totalSessions}
@@ -262,10 +268,13 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
             {report.totalSessions > 0 && (
                 <button
                     onClick={handleExport}
-                    className="btn-primary w-full flex items-center justify-center gap-2"
+                    disabled={isExporting}
+                    className={`btn-primary w-full flex items-center justify-center gap-2 transition-opacity ${
+                        isExporting ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                 >
-                    <Download className="w-5 h-5" />
-                    导出为图片
+                    <Download className={`w-5 h-5 ${isExporting ? 'animate-bounce' : ''}`} />
+                    <span>{isExporting ? '正在导出...' : '导出为图片'}</span>
                 </button>
             )}
         </div>
