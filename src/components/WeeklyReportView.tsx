@@ -35,46 +35,49 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
         setIsExporting(true);
 
         try {
-            // 确保元素在视口内并渲染完成
-            element.scrollIntoView({ block: 'start' });
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // 1. 先滚动到顶部，确保可见性
+            window.scrollTo(0, 0);
+            await new Promise(resolve => setTimeout(resolve, 300));
 
             const canvas = await html2canvas(element, {
-                backgroundColor: '#0f172a', // 使用更接近背景的颜色 (slate-900)
-                scale: 2, // 固定倍率，避免过大导致手机内存溢出
+                backgroundColor: '#0f172a',
+                scale: 2,
                 useCORS: true,
                 allowTaint: true,
-                logging: true,
-                width: element.scrollWidth,
+                logging: false,
+                // 关键修复：强制指定捕获宽度，防止 0 宽度错误
+                width: element.offsetWidth || 600,
                 height: element.scrollHeight,
-                windowWidth: element.scrollWidth,
-                windowHeight: element.scrollHeight,
-                x: 0,
-                y: 0,
-                scrollX: 0,
-                scrollY: 0,
                 onclone: (clonedDoc) => {
                     const clonedElement = clonedDoc.getElementById('weekly-report');
                     const exportHeader = clonedDoc.getElementById('export-header');
                     
                     if (exportHeader) {
                         exportHeader.classList.remove('hidden');
+                        exportHeader.style.display = 'block';
                     }
 
                     if (clonedElement) {
-                        clonedElement.style.padding = '24px';
-                        clonedElement.style.height = 'auto';
-                        clonedElement.style.width = '600px'; // 导出时固定宽度，防止布局乱掉
-                        clonedElement.style.background = 'linear-gradient(to bottom right, #0f172a, #581c87, #0f172a)';
-
-                        // 移除所有 glass-card 的 backdrop-filter，因为它会导致 html2canvas 渲染失败
+                        clonedElement.style.padding = '30px';
+                        clonedElement.style.width = '600px'; 
+                        clonedElement.style.background = '#0f172a'; // 换成纯色，防止渐变导致 createPattern 报错
+                        
+                        // 移除所有可能干扰渲染的特效
                         const glassCards = clonedElement.getElementsByClassName('glass-card');
                         for (let i = 0; i < glassCards.length; i++) {
                             const card = glassCards[i] as HTMLElement;
                             card.style.backdropFilter = 'none';
                             card.style.setProperty('-webkit-backdrop-filter', 'none');
-                            card.style.background = 'rgba(24, 24, 27, 0.8)';
+                            card.style.background = '#1e293b'; // 深蓝灰色
+                            card.style.border = '1px solid rgba(255,255,255,0.1)';
                         }
+
+                        // 强制修正所有图表容器的大小
+                        const chartContainers = clonedElement.querySelectorAll('.recharts-responsive-container');
+                        chartContainers.forEach(container => {
+                            (container as HTMLElement).style.width = '540px';
+                            (container as HTMLElement).style.height = '300px';
+                        });
                     }
                 }
             });
@@ -86,11 +89,9 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
-            console.log('导出成功!');
         } catch (error) {
             console.error('导出失败:', error);
-            alert('导出失败: ' + (error as Error).message);
+            alert('导出失败(代码101): ' + (error as Error).message);
         } finally {
             setIsExporting(false);
         }

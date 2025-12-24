@@ -9,6 +9,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>健身记录</title>
+    <script>
+      // 全局错误捕获，用于调试 Safari 白屏
+      window.onerror = function(msg, url, line, col, error) {
+        var errorInfo = "错误: " + msg + "\n行号: " + line + "\n浏览器: " + navigator.userAgent;
+        // 只有在加载失败时才弹窗，避免普通警告干扰
+        if (msg.indexOf('Script error') > -1 || msg.indexOf('Load failed') > -1) {
+          alert("网页加载异常，请尝试使用 Chrome 浏览器打开。\n" + errorInfo);
+        }
+        return false;
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>
