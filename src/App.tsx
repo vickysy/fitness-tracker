@@ -310,7 +310,7 @@ function App() {
                 这是一个专业的健身数字化交付工具。旨在帮助教练更高效地记录数据，帮助学员更直观地看到进步。
               </p>
               <div className="pt-4 border-t border-white/5 flex justify-between items-center text-[10px] text-white/20">
-                <span>版本: 1.0.4 (Build 1224-2140)</span>
+                <span>版本: 1.0.5 (Build 1224-2145)</span>
                 <button 
                   onClick={() => {
                     if(confirm('确定要清除所有缓存并重新加载吗？这不会删除你的训练数据。')) {

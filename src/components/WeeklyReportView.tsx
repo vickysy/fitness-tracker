@@ -3,7 +3,7 @@ import type { WorkoutSession } from '../types';
 import { reportGenerator } from '../utils/reportGenerator';
 import { format, addWeeks, subWeeks } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Download, TrendingUp, TrendingDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 interface WeeklyReportViewProps {
