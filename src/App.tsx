@@ -132,49 +132,45 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
-      {/* Header */}
-      <header className="glass-card m-3 sm:m-4 p-4 sm:p-6 sticky top-3 sm:top-4 z-10 animate-fade-in">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="bg-gradient-to-r from-orange-600 to-orange-500 p-2 sm:p-3 rounded-xl shadow-lg shadow-orange-900/50">
-              <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+    <div className="min-h-screen bg-[#09090b] text-white flex flex-col overflow-x-hidden">
+      {/* Header - 统一头部，减少闪烁 */}
+      <header className="glass-card m-3 p-4 z-30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="bg-orange-500 p-2 rounded-lg">
+              <Dumbbell className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-300 bg-clip-text text-transparent">
-                健身记录
+              <h1 className="text-lg font-bold">
+                {currentView === 'add' ? (editingWorkout ? '编辑训练' : '新建训练') : '健身记录'}
               </h1>
-              <p className="text-[10px] sm:text-sm text-gray-400">记录每一次进步</p>
             </div>
           </div>
 
-          {currentView !== 'add' && (
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            {currentView === 'add' ? (
+              <button
+                onClick={handleCancelEdit}
+                className="text-sm text-gray-400 hover:text-white px-2 py-1"
+              >
+                取消
+              </button>
+            ) : (
               <button
                 onClick={() => setCurrentView('settings')}
-                className={`p-2 sm:p-3 rounded-xl transition-all ${currentView === 'settings' ? 'bg-orange-500/20 text-orange-400' : 'text-gray-400 hover:bg-zinc-800'}`}
+                className={`p-2 rounded-lg ${currentView === 'settings' ? 'bg-orange-500/20 text-orange-400' : 'text-gray-400'}`}
               >
                 <Settings className="w-5 h-5" />
               </button>
-              <button
-                onClick={() => setCurrentView('add')}
-                className="btn-primary flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-base"
-              >
-                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>新建训练</span>
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="px-4">
+      {/* Main Content - 增加底部间距确保不被遮挡 */}
+      <main className="flex-1 px-4 pb-32">
         {currentView === 'dashboard' && (
-          <Dashboard
-            workouts={workouts}
-            onViewChange={setCurrentView}
-          />
+          <Dashboard workouts={workouts} onViewChange={setCurrentView} />
         )}
 
         {currentView === 'add' && (
@@ -194,16 +190,12 @@ function App() {
           />
         )}
 
-        {currentView === 'weekly' && (
-          <WeeklyReportView workouts={workouts} />
-        )}
-
-        {currentView === 'monthly' && (
-          <MonthlyReportView workouts={workouts} />
-        )}
+        {currentView === 'weekly' && <WeeklyReportView workouts={workouts} />}
+        {currentView === 'monthly' && <MonthlyReportView workouts={workouts} />}
 
         {currentView === 'settings' && (
           <div className="space-y-6 animate-fade-in">
+            {/* ... 设置内容保持不变 ... */}
             <div className="glass-card p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="bg-orange-500/20 p-2 rounded-lg">
@@ -310,7 +302,7 @@ function App() {
                 这是一个专业的健身数字化交付工具。旨在帮助教练更高效地记录数据，帮助学员更直观地看到进步。
               </p>
               <div className="pt-4 border-t border-white/5 flex justify-between items-center text-[10px] text-white/20">
-                <span>版本: 1.0.5 (Build 1224-2145)</span>
+                <span>版本: 1.0.6 (Build 1224-2200)</span>
                 <button 
                   onClick={() => {
                     if(confirm('确定要清除所有缓存并重新加载吗？这不会删除你的训练数据。')) {
@@ -327,29 +319,41 @@ function App() {
         )}
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 glass-card p-1 sm:p-2 z-20">
-        <div className="flex justify-around items-center">
-          <NavButton
-            icon={<Dumbbell className="w-4 h-4 sm:w-5 sm:h-5" />}
-            label="首页"
-            active={currentView === 'dashboard'}
-            onClick={() => setCurrentView('dashboard')}
-          />
-          <NavButton
-            icon={<Calendar className="w-4 h-4 sm:w-5 sm:h-5" />}
-            label="周报"
-            active={currentView === 'weekly'}
-            onClick={() => setCurrentView('weekly')}
-          />
-          <NavButton
-            icon={<TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />}
-            label="月报"
-            active={currentView === 'monthly'}
-            onClick={() => setCurrentView('monthly')}
-          />
-        </div>
-      </nav>
+      {/* Bottom Navigation - 仅在非编辑模式显示 */}
+      {currentView !== 'add' && (
+        <nav className="fixed bottom-4 left-4 right-4 glass-card p-2 z-20">
+          <div className="flex justify-around items-center">
+            <NavButton
+              icon={<Dumbbell className="w-5 h-5" />}
+              label="首页"
+              active={currentView === 'dashboard'}
+              onClick={() => setCurrentView('dashboard')}
+            />
+            <NavButton
+              icon={<Calendar className="w-5 h-5" />}
+              label="周报"
+              active={currentView === 'weekly'}
+              onClick={() => setCurrentView('weekly')}
+            />
+            <NavButton
+              icon={<TrendingUp className="w-5 h-5" />}
+              label="月报"
+              active={currentView === 'monthly'}
+              onClick={() => setCurrentView('monthly')}
+            />
+          </div>
+        </nav>
+      )}
+
+      {/* 悬浮新建按钮 - 仅在首页显示 */}
+      {currentView === 'dashboard' && (
+        <button
+          onClick={() => setCurrentView('add')}
+          className="fixed bottom-24 right-6 w-14 h-14 bg-orange-500 rounded-full shadow-xl shadow-orange-900/50 flex items-center justify-center z-30 animate-bounce-slow"
+        >
+          <Plus className="w-8 h-8 text-white" />
+        </button>
+      )}
     </div>
   );
 }
