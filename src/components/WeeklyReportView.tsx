@@ -31,24 +31,43 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
                 useCORS: true,
                 allowTaint: true,
                 logging: false,
+                width: 600,
+                windowWidth: 600, // 强制设置窗口宽度，解决电脑端截断问题
                 onclone: (clonedDoc) => {
                     const clonedElement = clonedDoc.getElementById('weekly-report');
                     const exportHeader = clonedDoc.getElementById('export-header');
-                    if (exportHeader) {
-                        exportHeader.classList.remove('hidden');
-                        exportHeader.style.display = 'block';
-                    }
+                    
                     if (clonedElement) {
                         clonedElement.style.padding = '30px';
-                        clonedElement.style.width = '600px'; 
+                        clonedElement.style.width = '600px';
+                        clonedElement.style.height = 'auto';
                         clonedElement.style.background = '#0f172a';
+                        clonedElement.style.display = 'block';
+                        clonedElement.style.visibility = 'visible';
+                        
+                        // 强制移除所有背景渐变和阴影，这些最容易导致 createPattern 报错
+                        const allElements = clonedElement.getElementsByTagName('*');
+                        for (let i = 0; i < allElements.length; i++) {
+                            const el = allElements[i] as HTMLElement;
+                            el.style.backgroundImage = 'none';
+                            el.style.boxShadow = 'none';
+                            el.style.textShadow = 'none';
+                        }
+
+                        if (exportHeader) {
+                            exportHeader.classList.remove('hidden');
+                            exportHeader.style.display = 'block';
+                            exportHeader.style.visibility = 'visible';
+                        }
                         
                         const cards = clonedElement.getElementsByClassName('glass-card');
                         for (let i = 0; i < cards.length; i++) {
                             const card = cards[i] as HTMLElement;
-                            card.style.background = 'rgba(30, 41, 59, 0.9)';
+                            card.style.background = '#1e293b'; // 使用纯色背景
                             card.style.backdropFilter = 'none';
+                            card.style.setProperty('-webkit-backdrop-filter', 'none');
                             card.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                            card.style.borderRadius = '12px';
                         }
                     }
                 }

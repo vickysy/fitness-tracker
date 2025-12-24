@@ -306,9 +306,22 @@ function App() {
 
             <div className="glass-card p-6">
               <h3 className="text-lg font-bold mb-4">关于应用</h3>
-              <p className="text-sm text-gray-400 leading-relaxed">
+              <p className="text-sm text-gray-400 leading-relaxed mb-4">
                 这是一个专业的健身数字化交付工具。旨在帮助教练更高效地记录数据，帮助学员更直观地看到进步。
               </p>
+              <div className="pt-4 border-t border-white/5 flex justify-between items-center text-[10px] text-white/20">
+                <span>版本: 1.0.4 (Build 1224-2140)</span>
+                <button 
+                  onClick={() => {
+                    if(confirm('确定要清除所有缓存并重新加载吗？这不会删除你的训练数据。')) {
+                      window.location.reload();
+                    }
+                  }}
+                  className="hover:text-orange-500 transition-colors"
+                >
+                  强制刷新
+                </button>
+              </div>
             </div>
           </div>
         )}
