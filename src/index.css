@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-zinc-950 via-neutral-900 to-black text-gray-100 min-h-screen;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+
+  /* 玻璃卡片 - 镜面效果 */
+  .glass-card {
+    @apply bg-gradient-to-br from-zinc-900/80 to-neutral-900/60 backdrop-blur-xl rounded-2xl border border-zinc-700/50 shadow-2xl relative overflow-hidden;
+  }
+
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  }
+
+  /* 主按钮 - 橙色健身风格 */
+  .btn-primary {
+    @apply bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-orange-900/50 transform transition-all duration-200 hover:scale-105 active:scale-95 border border-orange-400/20;
+  }
+
+  /* 次要按钮 - 银色镜面 */
+  .btn-secondary {
+    @apply bg-gradient-to-br from-zinc-800 to-zinc-900 hover:from-zinc-700 hover:to-zinc-800 text-gray-100 font-semibold py-3 px-6 rounded-xl border border-zinc-600/50 shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95;
+  }
+
+  /* 输入框 - 深色金属质感 */
+  .input-field {
+    @apply bg-zinc-900/90 backdrop-blur-sm border border-zinc-700/70 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 shadow-inner;
+  }
+
+  /* 统计卡片 - 金属质感 */
+  .stat-card {
+    @apply glass-card p-6 hover:border-orange-500/30 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-orange-900/20 hover:shadow-xl;
+  }
+}
+
+/* 自定义滚动条 - 深色金属 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(24, 24, 27, 0.5);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(161, 161, 170, 0.5), rgba(113, 113, 122, 0.5));
+  border-radius: 10px;
+  border: 2px solid rgba(24, 24, 27, 0.5);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(161, 161, 170, 0.7), rgba(113, 113, 122, 0.7));
+}
+
+/* 动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* 金属光泽效果 */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.metal-shine {
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 3s infinite;
+}
