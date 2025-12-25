@@ -168,7 +168,7 @@ function App() {
       </header>
 
       {/* Main Content - 增加底部间距确保不被遮挡 */}
-      <main className="flex-1 px-4 pb-32">
+      <main className="flex-1 px-4 pb-24 safe-bottom">
         {currentView === 'dashboard' && (
           <Dashboard workouts={workouts} onViewChange={setCurrentView} />
         )}

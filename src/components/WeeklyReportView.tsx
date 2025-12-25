@@ -31,28 +31,25 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
                 useCORS: true,
                 allowTaint: true,
                 logging: false,
-                width: 600,
-                windowWidth: 600,
                 onclone: (clonedDoc) => {
                     const clonedElement = clonedDoc.getElementById('weekly-report');
                     const exportHeader = clonedDoc.getElementById('export-header');
 
                     if (clonedElement) {
                         clonedElement.style.padding = '30px';
-                        clonedElement.style.width = '600px';
+                        clonedElement.style.width = 'auto';
+                        clonedElement.style.maxWidth = '600px';
                         clonedElement.style.height = 'auto';
                         clonedElement.style.background = '#0f172a';
                         clonedElement.style.display = 'block';
                         clonedElement.style.visibility = 'visible';
 
-                        // 移除所有可能导致 Safari 渲染问题的样式
                         const allElements = clonedElement.getElementsByTagName('*');
                         for (let i = 0; i < allElements.length; i++) {
                             const el = allElements[i] as HTMLElement;
                             el.style.backgroundImage = 'none';
                             el.style.boxShadow = 'none';
                             el.style.textShadow = 'none';
-                            // Safari 关键修复：移除 backdrop-filter
                             el.style.backdropFilter = 'none';
                             el.style.setProperty('-webkit-backdrop-filter', 'none');
                         }
@@ -181,7 +178,7 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
                 )}
             </div>
 
-            <div className="fixed bottom-6 left-6 right-6 z-50">
+            <div className="fixed bottom-24 left-4 right-4 z-50">
                 <button
                     onClick={handleExport}
                     disabled={isExporting}

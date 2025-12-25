@@ -10,6 +10,11 @@
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-bottom {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
   }
 }
 

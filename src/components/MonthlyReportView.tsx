@@ -31,21 +31,19 @@ export default function MonthlyReportView({ workouts }: MonthlyReportViewProps) 
                 useCORS: true,
                 allowTaint: true,
                 logging: false,
-                width: 800,
-                windowWidth: 800,
                 onclone: (clonedDoc) => {
                     const clonedElement = clonedDoc.getElementById('monthly-report');
                     const exportHeader = clonedDoc.getElementById('export-header-month');
 
                     if (clonedElement) {
                         clonedElement.style.padding = '40px';
-                        clonedElement.style.width = '800px';
+                        clonedElement.style.width = 'auto';
+                        clonedElement.style.maxWidth = '800px';
                         clonedElement.style.height = 'auto';
                         clonedElement.style.background = '#0f172a';
                         clonedElement.style.display = 'block';
                         clonedElement.style.visibility = 'visible';
 
-                        // 移除所有可能导致 Safari 渲染问题的样式
                         const allElements = clonedElement.getElementsByTagName('*');
                         for (let i = 0; i < allElements.length; i++) {
                             const el = allElements[i] as HTMLElement;
@@ -151,7 +149,7 @@ export default function MonthlyReportView({ workouts }: MonthlyReportViewProps) 
                 </div>
             </div>
 
-            <div className="fixed bottom-6 left-6 right-6 z-50">
+            <div className="fixed bottom-24 left-4 right-4 z-50">
                 <button onClick={handleExport} disabled={isExporting} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2">
                     <Download className="w-5 h-5" />
                     {isExporting ? '正在导出...' : '导出月报图片'}
