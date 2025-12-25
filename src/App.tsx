@@ -26,26 +26,23 @@ function App() {
   useEffect(() => {
     const initApp = async () => {
       try {
-        // 检查 URL 参数中的 syncCode
         const params = new URLSearchParams(window.location.search);
         const urlSyncCode = params.get('syncCode');
         if (urlSyncCode && urlSyncCode !== syncCode) {
           if (confirm(`检测到同步口令: ${urlSyncCode}\n是否要绑定此口令并同步数据？`)) {
             storage.setSyncCode(urlSyncCode);
             setSyncCode(urlSyncCode);
-            // 清除 URL 中的参数，避免刷新时再次提示
             window.history.replaceState({}, document.title, window.location.pathname);
           }
         }
 
-        await storage.migrateToSQLite();
         await loadWorkouts();
       } finally {
         setIsLoading(false);
       }
     };
     initApp();
-  }, [loadWorkouts]);
+  }, [loadWorkouts, syncCode]);
 
   // 监听云端实时更新
   useEffect(() => {
@@ -124,8 +121,66 @@ function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#09090b]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin"></div>
-          <p className="text-gray-400 animate-pulse">加载中...</p>
+          <div className="w-16 h-16 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin"></div>
+          <p className="text-gray-400 text-lg">加载中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!syncCode) {
+    return (
+      <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center p-6">
+        <div className="max-w-md w-full space-y-6">
+          <div className="text-center space-y-3">
+            <div className="bg-orange-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
+              <Dumbbell className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold">健身记录</h1>
+            <p className="text-gray-400">教练和学员共享训练数据</p>
+          </div>
+
+          <div className="glass-card p-8 space-y-6">
+            <button
+              onClick={generateSyncCode}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl text-lg"
+            >
+              生成新口令
+            </button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-[#09090b] px-3 text-gray-500">或者</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="输入口令"
+                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-6 py-4 text-lg text-center uppercase tracking-wider focus:border-orange-500 outline-none"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const val = e.currentTarget.value.trim().toUpperCase();
+                    if (val) handleSyncCodeChange(val);
+                  }
+                }}
+              />
+              <button
+                onClick={(e) => {
+                  const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                  const val = input.value.trim().toUpperCase();
+                  if (val) handleSyncCodeChange(val);
+                }}
+                className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-4 rounded-xl text-lg"
+              >
+                绑定口令
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
