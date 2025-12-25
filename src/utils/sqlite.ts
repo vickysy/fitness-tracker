@@ -114,7 +114,12 @@ export const executeQuery = async <T>(query: string, params: any[] = []): Promis
 
 // 执行修改
 export const executeRun = async (query: string, params: any[] = []): Promise<void> => {
-    const database = await initSQLite();
-    database.run(query, params);
-    await saveToIndexedDB(database.export());
+    try {
+        const database = await initSQLite();
+        database.run(query, params);
+        await saveToIndexedDB(database.export());
+    } catch (error) {
+        console.error('SQLite executeRun 失败:', error);
+        throw error;
+    }
 };

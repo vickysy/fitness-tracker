@@ -96,36 +96,41 @@ export const storage = {
 
     // 保存训练记录
     async saveWorkout(workout: WorkoutSession): Promise<void> {
-        // 先保存到本地 SQLite
-        await executeRun(
-            'INSERT OR REPLACE INTO workouts (id, date, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-            [
-                workout.id,
-                workout.date.toISOString(),
-                JSON.stringify(workout),
-                workout.createdAt.toISOString(),
-                workout.updatedAt.toISOString()
-            ]
-        );
+        try {
+            // 先保存到本地 SQLite
+            await executeRun(
+                'INSERT OR REPLACE INTO workouts (id, date, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+                [
+                    workout.id,
+                    workout.date.toISOString(),
+                    JSON.stringify(workout),
+                    workout.createdAt.toISOString(),
+                    workout.updatedAt.toISOString()
+                ]
+            );
 
-        // 如果有同步口令且已配置，同步到云端
-        const syncCode = this.getSyncCode();
-        if (syncCode && supabase) {
-            try {
-                const { error } = await supabase
-                    .from('workouts')
-                    .upsert({
-                        id: workout.id,
-                        sync_code: syncCode,
-                        date: workout.date.toISOString(),
-                        data: workout, // 存储完整对象
-                        updated_at: new Date().toISOString()
-                    });
+            // 如果有同步口令且已配置，同步到云端
+            const syncCode = this.getSyncCode();
+            if (syncCode && supabase) {
+                try {
+                    const { error } = await supabase
+                        .from('workouts')
+                        .upsert({
+                            id: workout.id,
+                            sync_code: syncCode,
+                            date: workout.date.toISOString(),
+                            data: workout,
+                            updated_at: new Date().toISOString()
+                        });
 
-                if (error) throw error;
-            } catch (error) {
-                console.error('同步到云端失败:', error);
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('同步到云端失败:', error);
+                }
             }
+        } catch (error) {
+            console.error('保存训练记录失败:', error);
+            throw error;
         }
     },
 
