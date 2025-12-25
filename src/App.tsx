@@ -349,7 +349,7 @@ function App() {
       {currentView === 'dashboard' && (
         <button
           onClick={() => setCurrentView('add')}
-          className="fixed bottom-24 right-6 w-14 h-14 bg-orange-500 rounded-full shadow-xl shadow-orange-900/50 flex items-center justify-center z-30 animate-bounce-slow"
+          className="fixed bottom-24 right-6 w-14 h-14 bg-orange-500 rounded-full shadow-xl shadow-orange-900/50 flex items-center justify-center z-10 animate-bounce-slow"
         >
           <Plus className="w-8 h-8 text-white" />
         </button>
