@@ -180,9 +180,9 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
                 {report.photos.length > 0 && (
                     <div className="glass-card p-6">
                         <h3 className="text-sm font-bold text-white/40 mb-4 uppercase">本周照片</h3>
-                        <div className="grid grid-cols-2 gap-3">
-                            {report.photos.slice(0, 4).map((photo, idx) => (
-                                <img key={idx} src={photo} alt="" className="w-full aspect-square object-cover rounded-lg" />
+                        <div className="grid grid-cols-3 gap-2">
+                            {report.photos.map((photo, idx) => (
+                                <img key={idx} src={photo} alt="" className="w-full h-auto rounded-lg" />
                             ))}
                         </div>
                     </div>
