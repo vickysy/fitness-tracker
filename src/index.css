@@ -15,9 +15,14 @@
 
 @layer components {
 
-  /* 玻璃卡片 - 镜面效果 */
+  /* 玻璃卡片 - 镜面效果 (Safari 优化) */
   .glass-card {
-    @apply bg-gradient-to-br from-zinc-900/80 to-neutral-900/60 backdrop-blur-xl rounded-2xl border border-zinc-700/50 shadow-2xl relative overflow-hidden;
+    @apply bg-gradient-to-br from-zinc-900/90 to-neutral-900/80 rounded-2xl border border-zinc-700/50 shadow-2xl relative overflow-hidden;
+    /* Safari 兼容的 backdrop-filter */
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    /* Safari 降级方案 - 使用更不透明的背景 */
+    background-color: rgba(24, 24, 27, 0.85);
   }
 
   .glass-card::before {

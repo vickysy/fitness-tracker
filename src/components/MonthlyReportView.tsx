@@ -19,7 +19,7 @@ export default function MonthlyReportView({ workouts }: MonthlyReportViewProps) 
         if (isExporting) return;
         const element = document.getElementById('monthly-report');
         if (!element) return;
-        
+
         setIsExporting(true);
         try {
             window.scrollTo(0, 0);
@@ -32,26 +32,29 @@ export default function MonthlyReportView({ workouts }: MonthlyReportViewProps) 
                 allowTaint: true,
                 logging: false,
                 width: 800,
-                windowWidth: 800, // 强制设置窗口宽度，解决电脑端截断问题
+                windowWidth: 800,
                 onclone: (clonedDoc) => {
                     const clonedElement = clonedDoc.getElementById('monthly-report');
                     const exportHeader = clonedDoc.getElementById('export-header-month');
-                    
+
                     if (clonedElement) {
                         clonedElement.style.padding = '40px';
-                        clonedElement.style.width = '800px'; 
+                        clonedElement.style.width = '800px';
                         clonedElement.style.height = 'auto';
                         clonedElement.style.background = '#0f172a';
                         clonedElement.style.display = 'block';
                         clonedElement.style.visibility = 'visible';
 
-                        // 强制移除所有背景渐变和阴影
+                        // 移除所有可能导致 Safari 渲染问题的样式
                         const allElements = clonedElement.getElementsByTagName('*');
                         for (let i = 0; i < allElements.length; i++) {
                             const el = allElements[i] as HTMLElement;
                             el.style.backgroundImage = 'none';
                             el.style.boxShadow = 'none';
                             el.style.textShadow = 'none';
+                            // Safari 关键修复：移除 backdrop-filter
+                            el.style.backdropFilter = 'none';
+                            el.style.setProperty('-webkit-backdrop-filter', 'none');
                         }
 
                         if (exportHeader) {
@@ -59,7 +62,7 @@ export default function MonthlyReportView({ workouts }: MonthlyReportViewProps) 
                             exportHeader.style.display = 'block';
                             exportHeader.style.visibility = 'visible';
                         }
-                        
+
                         const cards = clonedElement.getElementsByClassName('glass-card');
                         for (let i = 0; i < cards.length; i++) {
                             const card = cards[i] as HTMLElement;
@@ -73,17 +76,35 @@ export default function MonthlyReportView({ workouts }: MonthlyReportViewProps) 
                 }
             });
 
-            canvas.toBlob((blob) => {
-                if (!blob) return;
-                const url = URL.createObjectURL(blob);
+            // Safari 兼容：检查 toBlob 支持
+            if (canvas.toBlob) {
+                canvas.toBlob((blob) => {
+                    if (!blob) {
+                        alert('生成图片失败，请重试');
+                        return;
+                    }
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `月报_${format(report.month, 'yyyyMM')}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                }, 'image/png');
+            } else {
+                // 降级方案：使用 toDataURL
+                const dataUrl = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
-                link.href = url;
+                link.href = dataUrl;
                 link.download = `月报_${format(report.month, 'yyyyMM')}.png`;
+                document.body.appendChild(link);
                 link.click();
-                URL.revokeObjectURL(url);
-            }, 'image/png');
+                document.body.removeChild(link);
+            }
         } catch (error) {
-            alert('生成失败');
+            console.error('Export error:', error);
+            alert('生成失败，请尝试刷新页面。错误: ' + (error as Error).message);
         } finally {
             setIsExporting(false);
         }

@@ -9,26 +9,39 @@ const STORE_NAME = 'sqlite_file';
 export const initSQLite = async (): Promise<Database> => {
     if (db) return db;
 
-    const SQL = await initSqlJs({
-        locateFile: file => {
-            // 在生产环境和开发环境都能正确找到 wasm 文件
-            return `/${file}`;
+    try {
+        const SQL = await initSqlJs({
+            locateFile: file => {
+                // Safari 兼容：确保正确的 WASM 路径
+                if (import.meta.env.DEV) {
+                    return `/${file}`;
+                }
+                // 生产环境：从根目录加载
+                return `${import.meta.env.BASE_URL}${file}`;
+            }
+        });
+
+        // 从 IndexedDB 加载数据库文件
+        const savedDb = await loadFromIndexedDB();
+
+        if (savedDb) {
+            db = new SQL.Database(new Uint8Array(savedDb));
+        } else {
+            db = new SQL.Database();
+            // 创建初始表结构
+            createTables(db);
+            await saveToIndexedDB(db.export());
         }
-    });
 
-    // 从 IndexedDB 加载数据库文件
-    const savedDb = await loadFromIndexedDB();
-    
-    if (savedDb) {
-        db = new SQL.Database(new Uint8Array(savedDb));
-    } else {
+        return db;
+    } catch (error) {
+        console.error('SQLite 初始化失败:', error);
+        // Safari 降级方案：创建内存数据库
+        const SQL = await initSqlJs();
         db = new SQL.Database();
-        // 创建初始表结构
         createTables(db);
-        await saveToIndexedDB(db.export());
+        return db;
     }
-
-    return db;
 };
 
 // 创建表结构

@@ -19,7 +19,7 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
         if (isExporting) return;
         const element = document.getElementById('weekly-report');
         if (!element) return;
-        
+
         setIsExporting(true);
         try {
             window.scrollTo(0, 0);
@@ -32,11 +32,11 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
                 allowTaint: true,
                 logging: false,
                 width: 600,
-                windowWidth: 600, // 强制设置窗口宽度，解决电脑端截断问题
+                windowWidth: 600,
                 onclone: (clonedDoc) => {
                     const clonedElement = clonedDoc.getElementById('weekly-report');
                     const exportHeader = clonedDoc.getElementById('export-header');
-                    
+
                     if (clonedElement) {
                         clonedElement.style.padding = '30px';
                         clonedElement.style.width = '600px';
@@ -44,14 +44,17 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
                         clonedElement.style.background = '#0f172a';
                         clonedElement.style.display = 'block';
                         clonedElement.style.visibility = 'visible';
-                        
-                        // 强制移除所有背景渐变和阴影，这些最容易导致 createPattern 报错
+
+                        // 移除所有可能导致 Safari 渲染问题的样式
                         const allElements = clonedElement.getElementsByTagName('*');
                         for (let i = 0; i < allElements.length; i++) {
                             const el = allElements[i] as HTMLElement;
                             el.style.backgroundImage = 'none';
                             el.style.boxShadow = 'none';
                             el.style.textShadow = 'none';
+                            // Safari 关键修复：移除 backdrop-filter
+                            el.style.backdropFilter = 'none';
+                            el.style.setProperty('-webkit-backdrop-filter', 'none');
                         }
 
                         if (exportHeader) {
@@ -59,11 +62,11 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
                             exportHeader.style.display = 'block';
                             exportHeader.style.visibility = 'visible';
                         }
-                        
+
                         const cards = clonedElement.getElementsByClassName('glass-card');
                         for (let i = 0; i < cards.length; i++) {
                             const card = cards[i] as HTMLElement;
-                            card.style.background = '#1e293b'; // 使用纯色背景
+                            card.style.background = '#1e293b';
                             card.style.backdropFilter = 'none';
                             card.style.setProperty('-webkit-backdrop-filter', 'none');
                             card.style.border = '1px solid rgba(255, 255, 255, 0.1)';
@@ -73,21 +76,36 @@ export default function WeeklyReportView({ workouts }: WeeklyReportViewProps) {
                 }
             });
 
-            canvas.toBlob((blob) => {
-                if (!blob) return;
-                const url = URL.createObjectURL(blob);
+            // Safari 兼容：检查 toBlob 支持
+            if (canvas.toBlob) {
+                canvas.toBlob((blob) => {
+                    if (!blob) {
+                        alert('生成图片失败，请重试');
+                        return;
+                    }
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `周报_${format(report.weekStart, 'MMdd')}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                }, 'image/png');
+            } else {
+                // 降级方案：使用 toDataURL
+                const dataUrl = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
-                link.href = url;
+                link.href = dataUrl;
                 link.download = `周报_${format(report.weekStart, 'MMdd')}.png`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            }, 'image/png');
+            }
 
         } catch (error) {
             console.error('Export error:', error);
-            alert('生成失败，请尝试刷新页面');
+            alert('生成失败，请尝试刷新页面。错误: ' + (error as Error).message);
         } finally {
             setIsExporting(false);
         }
